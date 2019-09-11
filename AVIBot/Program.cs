@@ -7,28 +7,10 @@ namespace AVIBot
 {
     class Program
     {
-        DiscordSocketClient _client;
-
-        static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
-
-        public async Task MainAsync()
+        static void Main(string[] args)
         {
-            _client = new DiscordSocketClient();
-
-            _client.Log += Log;
-
-            var token = "token";
-
-            await _client.LoginAsync(TokenType.Bot, token);
-            await _client.StartAsync();
-
-            await Task.Delay(-1);
+            Console.WriteLine("Test: " + Config.bot.token);
         }
 
-        private Task Log(LogMessage msg)
-        {
-            Console.WriteLine(msg.ToString());
-            return Task.CompletedTask;
-        }
     }
 }
