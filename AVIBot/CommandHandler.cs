@@ -1,38 +1,39 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Reflection
 
 namespace AVIBot
 {
     public class CommandHandler
     {
-        private readonly DiscordSocketClient _client;
-        private readonly CommandService _commands;
+        private DiscordSocketClient _client;
+        private CommandService _service;
 
-        public CommandHandler(DiscordSocketClient client, CommandService commands)
+        public async Task InitializeAsync(DiscordSocketClient client)
         {
-            _commands = commands;
             _client = client;
+            _service = new CommandService();
+            await _service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            _client.MessageReceived += HandleCommandAsync;
         }
 
-        public async Task HandleCommandAsync(SocketMessage messageParam)
+        private async Task HandleCommandAsync(SocketMessage s)
         {
-            var message = messageParam as SocketUserMessage;
-            if (message == null) return;
-
+            var msg = s as SocketUserMessage;
+            if (msg == null) return;
+            var context = new SocketCommandContext(_client, msg);
             int argPos = 0;
-
-            if (!(message.HasCharPrefix('!', ref argPos) ||
-                  message.HasMentionPrefix(_client.CurrentUser, ref argPos)) ||
-                message.Author.IsBot)
-                return;
-
-            var context = new SocketCommandContext(_client, message);
-
-            await _commands.ExecuteAsync(
-                context: context,
-                argPos: argPos,
-                services: null);
+            if (msg.HasStringPrefix(Config.bot.cmdPrefix, ref argPos)
+                || msg.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            {
+                var result = await _service.ExecuteAsync(context, argPos, null);
+                if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
+                {
+                    Console.WriteLine(result.ErrorReason);
+                }
+            }
         }
     }
 }
