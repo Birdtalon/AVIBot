@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Reflection
+using System.Reflection;
 
 namespace AVIBot
 {
