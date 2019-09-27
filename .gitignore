@@ -1,5 +1,4 @@
 # Don't track content of these folders
-AVIBot/bin/Debug/Resources
 
 # Compiled source #
 ###################
@@ -24,3 +23,4 @@ AVIBot/bin/Debug/Resources
 *.rar
 *.tar
 *.zip
+/AVIBot/bin/Debug/Resources/config.json

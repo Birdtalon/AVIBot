@@ -9,17 +9,25 @@ namespace AVIBot.Modules
 {
     public class LeagueOfLegends : ModuleBase<SocketCommandContext>
     {
-        [Command("lolstatus")]
-        public async Task CheckLoLStatus()
+        private static string apiKey = "RGAPI-322387d0-a783-4a2b-b193-fd2f4f452dc8";
+
+        private dynamic CallAPI(string url, string apiKey)
         {
+            url = url + "?api_key=" + apiKey;
             string json;
             using (WebClient client = new WebClient())
             {
-                json = client.DownloadString(
-                    "https://euw1.api.riotgames.com/lol/status/v3/shard-data?api_key=RGAPI-322387d0-a783-4a2b-b193-fd2f4f452dc8");
+                json = client.DownloadString(url);
             }
 
             var dataObject = JsonConvert.DeserializeObject<dynamic>(json);
+            return dataObject;
+        }
+
+        [Command("lolstatus")]
+        public async Task CheckLoLStatus()
+        {
+            var dataObject = CallAPI("https://euw1.api.riotgames.com/lol/status/v3/shard-data", apiKey);
 
             string response = "";
 
@@ -33,15 +41,20 @@ namespace AVIBot.Modules
             var embed = new EmbedBuilder();
             embed.WithTitle("EUW Status");
             embed.WithDescription(response);
-            embed.WithColor(0, 255, 0);
+            var color = new Discord.Color();
+            if (dataObject["services"][0]["status"] == "online")
+            { 
+                color = new Discord.Color(0, 255, 0);
+            }
+            else
+            {
+                color = new Discord.Color(255, 0, 0);
+            }
+            embed.WithColor(color);
+            embed.WithCurrentTimestamp();
+            embed.WithThumbnailUrl("https://icon-library.net/images/league-of-legends-icon-png/league-of-legends-icon-png-17.jpg");
             var builtEmbed = embed.Build();
-
-            /*
-            var shardStatus = dataObject["services"][0]["status"]; // Online, offline etc
-            var shardName = dataObject["services"][0]["name"]; //Name
-            */
-
-
+            
             await Context.Channel.SendMessageAsync(null, false, builtEmbed);
         }
     }
